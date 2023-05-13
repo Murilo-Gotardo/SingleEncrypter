@@ -12,69 +12,82 @@ namespace SingleEncrypter.Commands
         {
             try
             {
-                // TODO: Arrumar o caminho absoluto (Ex: no momento ele retorna um arquivo que está em 'C:\dir\file.txt' apenas como 'C:\file.txt')
-                string path = Path.GetFullPath(args[2]);
+                string path = Path.GetFullPath(args[1]);
 
                 if (File.Exists(path))
                 {
-                    Encrypt(path);
+                    Encrypt(new FileInfo(path));
                 }
                 else
                 {
                     Console.WriteLine($"""
-                    Arquivo inválido
+
+                    Arquivo inválido: {path}
+
                     """);
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception("ENC precisa de um caminho de arquivo", ex);
+                throw new Exception($"ENC precisa de um caminho de arquivo", ex);
             }
-
         }
 
-        public static void Encrypt(string path) 
-        {
-            string encryptedFilePath = Path.GetFileName(path);
-            //string decryptedFilePath = "decrypted.txt";
-
-            // Generate a random encryption key and IV
-            byte[] key = new byte[32];
-            byte[] iv = new byte[16];
+        private static void Encrypt(FileInfo file) 
+        {         
             Aes aes = Aes.Create();
 
-            aes.GenerateKey();
-            aes.GenerateIV();
-            Array.Copy(aes.Key, key, key.Length);
-            Array.Copy(aes.IV, iv, iv.Length);
+            ICryptoTransform transform = aes.CreateEncryptor();
 
+            var _rsa = new RSACryptoServiceProvider();
 
-            // Encrypt the fil
-            FileStream originalFileStream = new(path, FileMode.Open);
-            FileStream encryptedFileStream = new(encryptedFilePath, FileMode.Create);
-            CryptoStream cryptoStream = new(encryptedFileStream, aes.CreateEncryptor(key, iv), CryptoStreamMode.Write);
+            byte[] keyEncrypted = _rsa.Encrypt(aes.Key, false);
 
-            originalFileStream.CopyTo(cryptoStream);
+            int lKey = keyEncrypted.Length;
+            byte[] LenK = BitConverter.GetBytes(lKey);
+            int lIV = aes.IV.Length;
+            byte[] LenIV = BitConverter.GetBytes(lIV);
 
+            string outFile = Path.ChangeExtension(file.Name, ".enc");
 
-            //// Decrypt the file
-            //using (FileStream encryptedFileStream = new FileStream(encryptedFilePath, FileMode.Open))
-            //using (FileStream decryptedFileStream = new FileStream(decryptedFilePath, FileMode.Create))
-            //using (CryptoStream cryptoStream = new CryptoStream(encryptedFileStream, aes.CreateDecryptor(key, iv), CryptoStreamMode.Read))
-            //{
-            //    cryptoStream.CopyTo(decryptedFileStream);
-            //}
+            var outFs = new FileStream(outFile, FileMode.Create);
+            
+            outFs.Write(LenK, 0, 4);
+            outFs.Write(LenIV, 0, 4);
+            outFs.Write(keyEncrypted, 0, lKey);
+            outFs.Write(aes.IV, 0, lIV);
 
-            //Console.WriteLine("Encryption and decryption complete.");
+            var outStreamEncrypted =
+                new CryptoStream(outFs, transform, CryptoStreamMode.Write);
+            
+            int count = 0;
+            int offset = 0;
 
+            int blockSizeBytes = aes.BlockSize / 8;
+            byte[] data = new byte[blockSizeBytes];
+            int bytesRead = 0;
 
+            var inFs = new FileStream(file.FullName, FileMode.Open);
+            
+            do
+            {
+                count = inFs.Read(data, 0, blockSizeBytes);
+                offset += count;
+                outStreamEncrypted.Write(data, 0, count);
+                bytesRead += blockSizeBytes;
+            } while (count > 0);
+            
+            outStreamEncrypted.FlushFinalBlock();
 
-            //base.GetCommand();
+            inFs.Close();
+            
+
+            Console.WriteLine($"Arquivo ({file.Name}) criptografado");
         }
 
         public override bool VerifyCommand(string[] args)
         {
-            return args[1] == "enc";
+            return args[0] == "enc";
         }
     }
 }

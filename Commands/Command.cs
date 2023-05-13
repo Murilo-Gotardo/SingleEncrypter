@@ -9,9 +9,11 @@
         public virtual void ExecuteCommand(string[] args)
         {   
             Console.WriteLine("""
+
                 MultiEncriper 0.1.0
                 ---------------
-                SE HELP para ajuda
+                HELP (comandos)
+
                 """);        
         }
 

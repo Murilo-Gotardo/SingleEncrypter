@@ -7,13 +7,17 @@
         public override void ExecuteCommand(string[] args)
         {
             Console.WriteLine("""
-                SE (faz coisas)
+                ---------------
+                SE (informações do software)
+                HELP (comandos)
+                ENC (faz coisas)
+                ---------------
                 """);
         }
 
         public override bool VerifyCommand(string[] args)
         {
-            return args[1] == "help";
+            return args[0] == "help";
         }
     }
 }
