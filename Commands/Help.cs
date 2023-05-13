@@ -1,35 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SingleEncrypter.Commands
+﻿namespace SingleEncrypter.Commands
 {
     internal class Help : Command
     {
+        public override string? CommandName { get; set; }
 
-        public override string CommandName { get; set; }
-
-        public override bool ExecuteCommand(string[] args)
-        {
-            if (args[1] == "help")
-            {
-                HelpUser();
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }      
-        }
-
-        public static void HelpUser()
+        public override void ExecuteCommand(string[] args)
         {
             Console.WriteLine("""
-                ME (faz coisas)
+                SE (faz coisas)
                 """);
-        } 
+        }
+
+        public override bool VerifyCommand(string[] args)
+        {
+            return args[1] == "help";
+        }
     }
 }

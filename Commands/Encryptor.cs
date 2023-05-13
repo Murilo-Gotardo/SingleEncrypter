@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Security.Cryptography;
 
 namespace SingleEncrypter.Commands
 {
     internal class Encryptor : Command
     {
+        public override string? CommandName { get; set; }
 
-        public override string CommandName { get; set; }
+        public override string? Option { get => base.Option; set => base.Option = value; }
 
-        public override string Option { get => base.Option; set => base.Option = value; }
-
-        public override bool ExecuteCommand(string[] args)
+        public override void ExecuteCommand(string[] args)
         {
             try
             {
@@ -24,15 +18,12 @@ namespace SingleEncrypter.Commands
                 if (File.Exists(path))
                 {
                     Encrypt(path);
-                    return true;
                 }
                 else
                 {
                     Console.WriteLine($"""
                     Arquivo inválido
                     """);
-
-                    return false;
                 }
             }
             catch (Exception ex)
@@ -79,6 +70,11 @@ namespace SingleEncrypter.Commands
 
 
             //base.GetCommand();
+        }
+
+        public override bool VerifyCommand(string[] args)
+        {
+            return args[1] == "enc";
         }
     }
 }

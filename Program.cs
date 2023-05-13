@@ -15,14 +15,15 @@ namespace SingleEncrypter
 
             //string[] args = Console.ReadLine().Split(" ");
 
-            if (commands[0].VerifyCommand(args) && args.Length >= 1)
+            if (commands[0].VerifyCommand(args) && args.Length >= 2)
             {
                 for (int i = 1; i < commands.Count; i++)
                 {
-                    // TODO: implementar o inicializador dos comandos
-                 
-                    //commands[i].ExecuteCommand(args);
-                    //break;
+                    if (commands[i].VerifyCommand(args))
+                    {
+                        commands[i].ExecuteCommand(args);
+                        break;
+                    }
                 }
             }
             else
