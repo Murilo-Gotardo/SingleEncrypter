@@ -10,15 +10,16 @@
         {   
             Console.WriteLine("""
 
-                MultiEncriper 0.1.0
+                SingleEncripter 0.1.0-beta
                 ---------------
-                HELP (comandos)
+                HELP (commands)
 
                 """);        
         }
 
         public virtual bool VerifyCommand(string[] args)
         {
+            CommandName = args[0] == "se" ? args[0] : "";
             return args[0] == "se";
         }
     }

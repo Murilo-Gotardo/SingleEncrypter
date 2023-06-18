@@ -4,6 +4,7 @@ namespace SingleEncrypter
 {
     internal class Program
     {
+        //removed args (parameter of main) for testing
         private static void Main()
         {
             List<Command> commands = new()
@@ -14,13 +15,12 @@ namespace SingleEncrypter
                 new Encryptor()
             };            
 
-            for (; ;)
+            for (; ; )
             {
                 Console.Write("SingleEncrypter> ");
                 string[] args = Console.ReadLine().Split(" ");
 
-                if (args[0] == "exit" || args[0] == "bye")
-                    break;
+                if (args[0] == "exit" || args[0] == "bye") break;
                
                 for (int i = 0; i < commands.Count; i++)
                 {

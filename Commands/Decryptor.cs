@@ -16,7 +16,7 @@ namespace SingleEncrypter.Commands
                 {
                     Console.WriteLine($"""
 
-                    Arquivo inválido: {path}
+                    File does not exist: {path}
 
                     """);
                 }
@@ -29,21 +29,26 @@ namespace SingleEncrypter.Commands
             byte[] fileBytes = File.ReadAllBytes(file);
 
             aes.Key = Encryptor.DeriveKey(key);
-            aes.Mode = CipherMode.ECB;
+            aes.IV = new byte[16];
+            aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.PKCS7;
 
             ICryptoTransform decrypt = aes.CreateDecryptor();
 
             byte[] decFile = decrypt.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
 
-            //TODO: keep the original extension
-
-            File.WriteAllBytes(Path.ChangeExtension(file, ".txt"), decFile);
+            File.WriteAllBytes(Path.ChangeExtension(file, ""), decFile);
             File.Delete(file);
+
+            //TODO: handle the exception
+
+            //Exception:  The input data is not a complete block
+            //the enc file has been modified
         }
 
         public override bool VerifyCommand(string[] args)
         {
+            CommandName = args[0] == "dec" ? args[0] : "";
             return args[0] == "dec";
         }
     }
