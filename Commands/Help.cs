@@ -9,9 +9,10 @@
             Console.WriteLine("""
                 ---------------
                 SE (software information)
-                HELP (commands)
+                HELP (help with commands)
                 ENC (encript a file)
                 DEC  (decript a file)
+                BYE/EXIT (close SingleEncrypter)
                 ---------------
                 """);
         }
