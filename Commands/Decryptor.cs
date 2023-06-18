@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using SingleEncrypter.Helper;
+using System.Security.Cryptography;
 
 namespace SingleEncrypter.Commands
 {
@@ -6,44 +7,73 @@ namespace SingleEncrypter.Commands
     {
         public override void ExecuteCommand(string[] args)
         {
+            try
+            {
                 string path = Path.GetFullPath(args[1]);
 
                 if (File.Exists(path))
                 {
                     Decrypt(path, args[2]);
+                    Console.WriteLine($"""
+                        ---------------
+                        File decryption succeeded
+                        ---------------
+                        """);
                 }
                 else
                 {
                     Console.WriteLine($"""
-
-                    File does not exist: {path}
-
+                    ---------------
+                    File does not exist 
+                    Path provided: {path}
+                    ---------------
                     """);
-                }
+                }                  
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine($"""
+                    ---------------
+                    DEC needs a valid path
+                    ---------------
+                    """);
+            }
+                
         }
 
         public static void Decrypt(string file, string key)
         {
-            Aes aes = Aes.Create();
+            try
+            {
+                FileHelper.RestorePermissions(file);
 
-            byte[] fileBytes = File.ReadAllBytes(file);
+                Aes _aes = Aes.Create();
 
-            aes.Key = Encryptor.DeriveKey(key);
-            aes.IV = new byte[16];
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.PKCS7;
+                byte[] fileBytes = File.ReadAllBytes(file);
 
-            ICryptoTransform decrypt = aes.CreateDecryptor();
+                _aes.Key = Encryptor.DeriveKey(key);
+                _aes.IV = new byte[16];
+                _aes.Mode = CipherMode.CBC;
+                _aes.Padding = PaddingMode.PKCS7;
 
-            byte[] decFile = decrypt.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
+                ICryptoTransform decrypt = _aes.CreateDecryptor();
 
-            File.WriteAllBytes(Path.ChangeExtension(file, ""), decFile);
-            File.Delete(file);
+                byte[] decFile = decrypt.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
 
-            //TODO: handle the exception
+                File.WriteAllBytes(Path.ChangeExtension(file, ""), decFile);
+                File.Delete(file);
+            }
+            catch (CryptographicException)
+            {
+                DateTime modifiedFile = File.GetLastWriteTime(file);
 
-            //Exception:  The input data is not a complete block
-            //the enc file has been modified
+                Console.WriteLine($"""
+                    ---------------
+                    The file has been modified (impossible to decrypt)
+                    Modified date: {modifiedFile}
+                    ---------------
+                    """);
+            }
         }
 
         public override bool VerifyCommand(string[] args)

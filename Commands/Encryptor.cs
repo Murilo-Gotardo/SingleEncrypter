@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using SingleEncrypter.Helper;
 
 namespace SingleEncrypter.Commands
 {
@@ -18,40 +19,66 @@ namespace SingleEncrypter.Commands
                 if (File.Exists(path))
                 {
                     Encrypt(path, args[2]);
-                }
+                    Console.WriteLine($"""
+                        ---------------
+                        File encryption succeeded
+                        Save your password: {args[2]}
+                        ---------------
+                        """);
+                } 
                 else
                 {
                     Console.WriteLine($"""
-
-                    File does not exist: {path}
-
+                    ---------------
+                    File does not exist 
+                    Path provided: {path}
+                    ---------------
                     """);
                 }
             }
-            catch (Exception ex)
+            catch (ArgumentException)
             {
-                throw new Exception($"ENC needs valid path", ex);
+                Console.WriteLine($"""
+                    ---------------
+                    ENC needs a valid path
+                    ---------------
+                    """);
             }
         }
 
         private static void Encrypt(string file, string key) 
-        {         
-            //TODO: block writing permition to the .enc file
-            Aes aes = Aes.Create();
+        {
+            try
+            {
+                Aes _aes = Aes.Create();
 
-            byte[] fileBytes = File.ReadAllBytes(file);
+                byte[] fileBytes = File.ReadAllBytes(file);
 
-            aes.Key = DeriveKey(key);
-            aes.IV = new byte[16];
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.PKCS7;
+                _aes.Key = DeriveKey(key);
+                _aes.IV = new byte[16];
+                _aes.Mode = CipherMode.CBC;
+                _aes.Padding = PaddingMode.PKCS7;
 
-            ICryptoTransform encryptor = aes.CreateEncryptor();
+                ICryptoTransform encryptor = _aes.CreateEncryptor();
 
-            byte[] encFile = encryptor.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
+                byte[] encFile = encryptor.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
 
-            File.WriteAllBytes(file + ".enc", encFile);
-            File.Delete(file);
+                string newFile = file + ".enc";
+
+                File.WriteAllBytes(newFile, encFile);
+
+                FileHelper.RestrictPermisions(newFile);
+
+                File.Delete(file);
+            } 
+            catch (CryptographicException)
+            {
+                Console.WriteLine($"""
+                    ---------------
+                    SingleEncrypter could not encrypt the file: {file}
+                    ---------------
+                    """);
+            }
         }
 
         public static byte[] DeriveKey(string privateKey)

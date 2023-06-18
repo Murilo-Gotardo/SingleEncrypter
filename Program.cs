@@ -13,24 +13,44 @@ namespace SingleEncrypter
                 new Help(),
                 new Decryptor(),
                 new Encryptor()
-            };            
+            };
 
-            for (; ; )
+            while (true)
             {
                 Console.Write("SingleEncrypter> ");
-                string[] args = Console.ReadLine().Split(" ");
+                string[] args = Console.ReadLine().ToLower().Split(" ");
 
                 if (args[0] == "exit" || args[0] == "bye") break;
-               
-                for (int i = 0; i < commands.Count; i++)
+
+                bool commandFound = false;
+
+                foreach (Command command in commands)
                 {
-                    if (commands[i].VerifyCommand(args))
+                    if (command.VerifyCommand(args))
                     {
-                        commands[i].ExecuteCommand(args);
+                        command.ExecuteCommand(args);
+                        commandFound = true;
                         break;
                     }
+                    //TODO: (maybe) refactor this section
+                    else
+                    {
+                        if (args[0] == "clear") 
+                            Console.Clear();
+                            commandFound = true;
+                    }
+                    //till here
                 }
-            }  
+
+                if (!commandFound)
+                {
+                    Console.WriteLine("""
+                        ---------------
+                        Invalid command (type HELP)
+                        ---------------
+                        """);
+                }
+            }
         }
     }
 }
