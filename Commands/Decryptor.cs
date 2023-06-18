@@ -10,7 +10,7 @@ namespace SingleEncrypter.Commands
 
                 if (File.Exists(path))
                 {
-                    Decrypt(new FileInfo(path));
+                    Decrypt(path, args[2]);
                 }
                 else
                 {
@@ -22,62 +22,24 @@ namespace SingleEncrypter.Commands
                 }
         }
 
-        public static void Decrypt(FileInfo file)
+        public static void Decrypt(string file, string key)
         {
             Aes aes = Aes.Create();
 
-            byte[] LenK = new byte[4];
-            byte[] LenIV = new byte[4];
+            byte[] fileBytes = File.ReadAllBytes(file);
 
-            string outFile =
-                Path.ChangeExtension(file.FullName.Replace("Encrypt", "Decrypt"), ".txt");
+            aes.Key = Encryptor.DeriveKey(key);
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.PKCS7;
 
-            var inFs = new FileStream(file.FullName, FileMode.Open);
-            
-            inFs.Seek(0, SeekOrigin.Begin);
-            inFs.Read(LenK, 0, 3);
-            inFs.Seek(4, SeekOrigin.Begin);
-            inFs.Read(LenIV, 0, 3);
+            ICryptoTransform decrypt = aes.CreateDecryptor();
 
-            int lenK = BitConverter.ToInt32(LenK, 0);
-            int lenIV = BitConverter.ToInt32(LenIV, 0);
+            byte[] decFile = decrypt.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
 
-            int startC = lenK + lenIV + 8;
-            int lenC = (int)inFs.Length - startC;
+            //TODO: keep the original extension
 
-            byte[] KeyEncrypted = new byte[lenK];
-            byte[] IV = new byte[lenIV];
-
-            inFs.Seek(8, SeekOrigin.Begin);
-            inFs.Read(KeyEncrypted, 0, lenK);
-            inFs.Seek(8 + lenK, SeekOrigin.Begin);
-            inFs.Read(IV, 0, lenIV);
-
-            var _rsa = new RSACryptoServiceProvider();
-            byte[] KeyDecrypted = _rsa.Decrypt(KeyEncrypted, false);
-
-            ICryptoTransform transform = aes.CreateDecryptor(KeyDecrypted, IV);
-
-            var outFs = new FileStream(outFile, FileMode.Create);
-                
-            int count = 0;
-            int offset = 0;
-
-            int blockSizeBytes = aes.BlockSize / 8;
-            byte[] data = new byte[blockSizeBytes];
-
-            inFs.Seek(startC, SeekOrigin.Begin);
-            var outStreamDecrypted =
-                new CryptoStream(outFs, transform, CryptoStreamMode.Write);
-                    
-            do
-            {
-                count = inFs.Read(data, 0, blockSizeBytes);
-                offset += count;
-                outStreamDecrypted.Write(data, 0, count);
-            } while (count > 0);
-
-            outStreamDecrypted.FlushFinalBlock();
+            File.WriteAllBytes(Path.ChangeExtension(file, ".txt"), decFile);
+            File.Delete(file);
         }
 
         public override bool VerifyCommand(string[] args)

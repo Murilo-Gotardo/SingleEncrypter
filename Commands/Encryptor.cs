@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Text;
 
 namespace SingleEncrypter.Commands
 {
@@ -16,7 +17,7 @@ namespace SingleEncrypter.Commands
 
                 if (File.Exists(path))
                 {
-                    Encrypt(new FileInfo(path));
+                    Encrypt(path, args[2]);
                 }
                 else
                 {
@@ -33,56 +34,32 @@ namespace SingleEncrypter.Commands
             }
         }
 
-        private static void Encrypt(FileInfo file) 
+        private static void Encrypt(string file, string key) 
         {         
+            // Using ECB, NOT SECURE
+
             Aes aes = Aes.Create();
 
-            ICryptoTransform transform = aes.CreateEncryptor();
+            byte[] fileBytes = File.ReadAllBytes(file);
 
-            var _rsa = new RSACryptoServiceProvider();
+            aes.Key = DeriveKey(key);
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.PKCS7;
 
-            byte[] keyEncrypted = _rsa.Encrypt(aes.Key, false);
+            ICryptoTransform encryptor = aes.CreateEncryptor();
 
-            int lKey = keyEncrypted.Length;
-            byte[] LenK = BitConverter.GetBytes(lKey);
-            int lIV = aes.IV.Length;
-            byte[] LenIV = BitConverter.GetBytes(lIV);
+            byte[] encFile = encryptor.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
 
-            string outFile = Path.ChangeExtension(file.Name, ".enc");
+            File.WriteAllBytes(Path.ChangeExtension(file, ".enc"), encFile);
+            File.Delete(file);
+        }
 
-            var outFs = new FileStream(outFile, FileMode.Create);
-            
-            outFs.Write(LenK, 0, 4);
-            outFs.Write(LenIV, 0, 4);
-            outFs.Write(keyEncrypted, 0, lKey);
-            outFs.Write(aes.IV, 0, lIV);
+        public static byte[] DeriveKey(string privateKey)
+        {
+            byte[] privateKeyBytes = Encoding.UTF8.GetBytes(privateKey);
+            byte[] hash = SHA256.HashData(privateKeyBytes);
 
-            var outStreamEncrypted =
-                new CryptoStream(outFs, transform, CryptoStreamMode.Write);
-            
-            int count = 0;
-            int offset = 0;
-
-            int blockSizeBytes = aes.BlockSize / 8;
-            byte[] data = new byte[blockSizeBytes];
-            int bytesRead = 0;
-
-            var inFs = new FileStream(file.FullName, FileMode.Open);
-            
-            do
-            {
-                count = inFs.Read(data, 0, blockSizeBytes);
-                offset += count;
-                outStreamEncrypted.Write(data, 0, count);
-                bytesRead += blockSizeBytes;
-            } while (count > 0);
-            
-            outStreamEncrypted.FlushFinalBlock();
-
-            inFs.Close();
-            
-
-            Console.WriteLine($"Arquivo ({file.Name}) criptografado");
+            return hash;
         }
 
         public override bool VerifyCommand(string[] args)
