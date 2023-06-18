@@ -23,34 +23,34 @@ namespace SingleEncrypter.Commands
                 {
                     Console.WriteLine($"""
 
-                    Arquivo inválido: {path}
+                    File does not exist: {path}
 
                     """);
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"ENC precisa de um caminho de arquivo", ex);
+                throw new Exception($"ENC needs valid path", ex);
             }
         }
 
         private static void Encrypt(string file, string key) 
         {         
-            // Using ECB, NOT SECURE
-
+            //TODO: block writing permition to the .enc file
             Aes aes = Aes.Create();
 
             byte[] fileBytes = File.ReadAllBytes(file);
 
             aes.Key = DeriveKey(key);
-            aes.Mode = CipherMode.ECB;
+            aes.IV = new byte[16];
+            aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.PKCS7;
 
             ICryptoTransform encryptor = aes.CreateEncryptor();
 
             byte[] encFile = encryptor.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
 
-            File.WriteAllBytes(Path.ChangeExtension(file, ".enc"), encFile);
+            File.WriteAllBytes(file + ".enc", encFile);
             File.Delete(file);
         }
 
@@ -64,6 +64,7 @@ namespace SingleEncrypter.Commands
 
         public override bool VerifyCommand(string[] args)
         {
+            CommandName = args[0] == "enc" ? args[0] : "";
             return args[0] == "enc";
         }
     }

@@ -8,15 +8,17 @@
         {
             Console.WriteLine("""
                 ---------------
-                SE (informações do software)
-                HELP (comandos)
-                ENC (faz coisas)
+                SE (software information)
+                HELP (commands)
+                ENC (encript a file)
+                DEC  (decript a file)
                 ---------------
                 """);
         }
 
         public override bool VerifyCommand(string[] args)
         {
+            CommandName = args[0] == "help" ? args[0] : "";
             return args[0] == "help";
         }
     }
