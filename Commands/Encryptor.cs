@@ -19,19 +19,13 @@ namespace SingleEncrypter.Commands
                 if (File.Exists(path))
                 {
                     Encrypt(path, args[2]);
-                    Console.WriteLine($"""
-                        ---------------
-                        File encryption succeeded
-                        Save your password: {args[2]}
-                        ---------------
-                        """);
                 } 
                 else
                 {
                     Console.WriteLine($"""
                     ---------------
-                    File does not exist 
-                    Path provided: {path}
+                    - File does not exist 
+                    - Path provided: {path}
                     ---------------
                     """);
                 }
@@ -40,7 +34,7 @@ namespace SingleEncrypter.Commands
             {
                 Console.WriteLine($"""
                     ---------------
-                    ENC needs a valid path
+                    - ENC needs a valid path
                     ---------------
                     """);
             }
@@ -70,12 +64,19 @@ namespace SingleEncrypter.Commands
                 FileHelper.RestrictPermisions(newFile);
 
                 File.Delete(file);
+
+                Console.WriteLine($"""
+                    ---------------
+                    - File encryption succeeded
+                    - Save your password: {key}
+                    ---------------
+                    """);
             } 
             catch (CryptographicException)
             {
                 Console.WriteLine($"""
                     ---------------
-                    SingleEncrypter could not encrypt the file: {file}
+                    - SingleEncrypter could not encrypt the file: {file}
                     ---------------
                     """);
             }

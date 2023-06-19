@@ -14,18 +14,13 @@ namespace SingleEncrypter.Commands
                 if (File.Exists(path))
                 {
                     Decrypt(path, args[2]);
-                    Console.WriteLine($"""
-                        ---------------
-                        File decryption succeeded
-                        ---------------
-                        """);
                 }
                 else
                 {
                     Console.WriteLine($"""
                     ---------------
-                    File does not exist 
-                    Path provided: {path}
+                    - File does not exist 
+                    - Path provided: {path}
                     ---------------
                     """);
                 }                  
@@ -34,7 +29,7 @@ namespace SingleEncrypter.Commands
             {
                 Console.WriteLine($"""
                     ---------------
-                    DEC needs a valid path
+                    - DEC needs a valid path
                     ---------------
                     """);
             }
@@ -43,36 +38,96 @@ namespace SingleEncrypter.Commands
 
         public static void Decrypt(string file, string key)
         {
+            FileHelper.RestorePermissions(file);
+
+            if (VerifyPassword(file, key))
+            {
+                try
+                {
+                    Aes _aes = Aes.Create();
+
+                    byte[] fileBytes = File.ReadAllBytes(file);
+
+                    _aes.Key = Encryptor.DeriveKey(key);
+                    _aes.IV = new byte[16];
+                    _aes.Mode = CipherMode.CBC;
+                    _aes.Padding = PaddingMode.PKCS7;
+
+                    ICryptoTransform decrypt = _aes.CreateDecryptor();
+
+                    byte[] decFile = decrypt.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
+
+                    File.WriteAllBytes(Path.ChangeExtension(file, ""), decFile);
+                    File.Delete(file);
+
+                    Console.WriteLine($"""
+                    ---------------
+                    - File decryption succeeded
+                    ---------------
+                    """);
+                }
+                catch (CryptographicException)
+                {
+                    DateTime modifiedFile = File.GetLastWriteTime(file);
+
+                    Console.WriteLine($"""
+                    ---------------
+                    - The file has been modified (impossible to decrypt)
+                    - Modified date: {modifiedFile}
+                    ---------------
+                    """);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine($"""
+                        ---------------
+                        - Some unknown error ocurred while decrypting the file
+                        ---------------
+                        """);
+                }
+            }
+        }
+
+        public static bool VerifyPassword(string file, string key)
+        {
             try
             {
-                FileHelper.RestorePermissions(file);
+                byte[] fileBytes = File.ReadAllBytes(file);
 
                 Aes _aes = Aes.Create();
-
-                byte[] fileBytes = File.ReadAllBytes(file);
 
                 _aes.Key = Encryptor.DeriveKey(key);
                 _aes.IV = new byte[16];
                 _aes.Mode = CipherMode.CBC;
                 _aes.Padding = PaddingMode.PKCS7;
 
-                ICryptoTransform decrypt = _aes.CreateDecryptor();
+                MemoryStream ms = new(fileBytes);
+                CryptoStream cs = new(ms, _aes.CreateDecryptor(), CryptoStreamMode.Read);
+                StreamReader reader = new(cs);
 
-                byte[] decFile = decrypt.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
+                string decryptedContent = reader.ReadToEnd();
 
-                File.WriteAllBytes(Path.ChangeExtension(file, ""), decFile);
-                File.Delete(file);
+                return true;
             }
             catch (CryptographicException)
             {
-                DateTime modifiedFile = File.GetLastWriteTime(file);
-
                 Console.WriteLine($"""
                     ---------------
-                    The file has been modified (impossible to decrypt)
-                    Modified date: {modifiedFile}
+                    - Invalid password
                     ---------------
                     """);
+
+                return false;
+            }
+            catch (Exception)
+            {
+                Console.WriteLine($"""
+                    ---------------
+                    - Some error ocurred while verifing the password
+                    ---------------
+                    """);
+
+                return false;
             }
         }
 

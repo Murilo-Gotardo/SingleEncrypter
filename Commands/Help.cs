@@ -8,11 +8,11 @@
         {
             Console.WriteLine("""
                 ---------------
-                SE (software information)
-                HELP (help with commands)
-                ENC (encript a file)
-                DEC  (decript a file)
-                BYE/EXIT (close SingleEncrypter)
+                - SE (software information)
+                - HELP (help with commands)
+                - ENC (encript a file)
+                - DEC  (decript a file)
+                - BYE/EXIT (close SingleEncrypter)
                 ---------------
                 """);
         }

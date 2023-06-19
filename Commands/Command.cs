@@ -1,4 +1,7 @@
-﻿namespace SingleEncrypter.Commands
+﻿using SingleEncrypter.Helper;
+using System.Reflection;
+
+namespace SingleEncrypter.Commands
 {
     internal class Command
     {
@@ -6,14 +9,22 @@
 
         public virtual string? Option { get; set; }
 
-        public virtual void ExecuteCommand(string[] args)
-        {   
-            Console.WriteLine("""
+        public virtual async void ExecuteCommand(string[] args)
+        {
+            GitHubTagHelper.GetLatestTag("Murilo-Gotardo", "SingleEncrypter");
 
-                SingleEncripter 0.1.0-beta
-                ---------------
-                HELP (commands)
+            string projectDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+           
+            string cacheFilePath = Path.Combine(projectDirectory, "Cache", "tagCache.txt");
+            
+            string tag = File.ReadAllText(cacheFilePath);
 
+            Console.WriteLine($"""
+                ******************************
+                # SingleEncripter {tag}      #
+                # ---------------            #
+                # HELP (commands)            #
+                ******************************
                 """);        
         }
 
