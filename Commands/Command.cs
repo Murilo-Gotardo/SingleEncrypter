@@ -3,35 +3,16 @@ using System.Reflection;
 
 namespace SingleEncrypter.Commands
 {
-    internal class Command
+    internal abstract class Command
     {
-        public virtual string? CommandName { get; set; }
+        public abstract string? CommandName { get; set; }
 
-        public virtual string? Option { get; set; }
+        public abstract string? Option { get; set; }
 
-        public virtual async void ExecuteCommand(string[] args)
-        {
-            GitHubTagHelper.GetLatestTag("Murilo-Gotardo", "SingleEncrypter");
+        public abstract void ExecuteCommand(string[] args);
 
-            string projectDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-           
-            string cacheFilePath = Path.Combine(projectDirectory, "Cache", "tagCache.txt");
-            
-            string tag = File.ReadAllText(cacheFilePath);
+        public abstract Task ExecuteCommandAsync(string[] args);
 
-            Console.WriteLine($"""
-                ******************************
-                # SingleEncripter {tag}      #
-                # ---------------            #
-                # HELP (commands)            #
-                ******************************
-                """);        
-        }
-
-        public virtual bool VerifyCommand(string[] args)
-        {
-            CommandName = args[0] == "se" ? args[0] : "";
-            return args[0] == "se";
-        }
+        public abstract bool VerifyCommand(string[] args);
     }
 }

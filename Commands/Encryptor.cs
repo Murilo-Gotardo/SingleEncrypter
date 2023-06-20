@@ -8,7 +8,7 @@ namespace SingleEncrypter.Commands
     {
         public override string? CommandName { get; set; }
 
-        public override string? Option { get => base.Option; set => base.Option = value; }
+        public override string? Option { get; set; }
 
         public override void ExecuteCommand(string[] args)
         {
@@ -38,6 +38,11 @@ namespace SingleEncrypter.Commands
                     ---------------
                     """);
             }
+        }
+
+        public override Task ExecuteCommandAsync(string[] args)
+        {
+            throw new NotImplementedException();
         }
 
         private static void Encrypt(string file, string key) 

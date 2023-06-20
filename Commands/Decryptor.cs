@@ -5,6 +5,10 @@ namespace SingleEncrypter.Commands
 {
     internal class Decryptor : Command
     {
+        public override string? CommandName { get; set; }
+
+        public override string? Option { get; set; }
+
         public override void ExecuteCommand(string[] args)
         {
             try
@@ -34,6 +38,11 @@ namespace SingleEncrypter.Commands
                     """);
             }
                 
+        }
+
+        public override Task ExecuteCommandAsync(string[] args)
+        {
+            throw new NotImplementedException();
         }
 
         public static void Decrypt(string file, string key)
