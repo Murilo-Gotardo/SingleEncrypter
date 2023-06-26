@@ -27,34 +27,34 @@ namespace SingleEncrypter
 
                 foreach (Command command in commands)
                 {
-                    if (command.VerifyCommand(args))
+                    if (args[0] == "se")
                     {
-                        if (args[0] == "se")
-                        {
-                            command.ExecuteCommandAsync(args);
-                            //gambiarra
-                            Thread.Sleep(500);
-                            commandFound = true;
-                            break;
-                        }
-                        else
+                        command.ExecuteCommandAsync(args).GetAwaiter().GetResult();
+                        commandFound = true;
+                        break;
+                    }
+                    else if (args[0] == "clear" || args[0] == "cls")
+                    {
+                        Console.Clear();
+                        commandFound = true;
+                        break;
+                    }
+                    else
+                    {
+                        if (command.VerifyCommand(args))
                         {
                             command.ExecuteCommand(args);
                             commandFound = true;
                             break;
                         }
                     }
-                    
-                    if (args[0] == "clear") 
-                        Console.Clear();
-                        commandFound = true;
                 }
 
                 if (!commandFound)
                 {
                     Console.WriteLine("""
                         ---------------
-                        Invalid command (type HELP)
+                        - Invalid command (type HELP)
                         ---------------
                         """);
                 }

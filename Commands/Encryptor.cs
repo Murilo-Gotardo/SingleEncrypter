@@ -1,4 +1,6 @@
-﻿using System.Security.Cryptography;
+﻿using System.IO;
+using System;
+using System.Security.Cryptography;
 using System.Text;
 using SingleEncrypter.Helper;
 
@@ -23,11 +25,11 @@ namespace SingleEncrypter.Commands
                 else
                 {
                     Console.WriteLine($"""
-                    ---------------
-                    - File does not exist 
-                    - Path provided: {path}
-                    ---------------
-                    """);
+                        ---------------
+                        - File does not exist 
+                        - Path provided: {path}
+                        ---------------
+                        """);
                 }
             }
             catch (ArgumentException)
@@ -51,22 +53,33 @@ namespace SingleEncrypter.Commands
             {
                 Aes _aes = Aes.Create();
 
-                byte[] fileBytes = File.ReadAllBytes(file);
-
                 _aes.Key = DeriveKey(key);
                 _aes.IV = new byte[16];
                 _aes.Mode = CipherMode.CBC;
                 _aes.Padding = PaddingMode.PKCS7;
 
-                ICryptoTransform encryptor = _aes.CreateEncryptor();
+                string encFile = file + ".enc";
 
-                byte[] encFile = encryptor.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
+                FileStream _inFileStreamReader = new(file, FileMode.Open, FileAccess.Read);
+                FileStream _outFileStreamReader = new(encFile, FileMode.OpenOrCreate, FileAccess.Write);
+                _outFileStreamReader.SetLength(0);
 
-                string newFile = file + ".enc";
+                CryptoStream _cryptoStream = new(_outFileStreamReader, _aes.CreateEncryptor(), CryptoStreamMode.Write);                
 
-                File.WriteAllBytes(newFile, encFile);
+                byte[] buffer = new byte[4096];
 
-                FileHelper.RestrictPermisions(newFile);
+                int bytesRead;
+
+                while ((bytesRead = _inFileStreamReader.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    _cryptoStream.Write(buffer, 0, bytesRead);
+                }
+
+                _cryptoStream.Close();
+                _inFileStreamReader.Close();
+                _outFileStreamReader.Close();
+
+                FileHelper.RestrictPermisions(encFile);
 
                 File.Delete(file);
 
@@ -87,9 +100,9 @@ namespace SingleEncrypter.Commands
             }
         }
 
-        public static byte[] DeriveKey(string privateKey)
+        public static byte[] DeriveKey(string key)
         {
-            byte[] privateKeyBytes = Encoding.UTF8.GetBytes(privateKey);
+            byte[] privateKeyBytes = Encoding.UTF8.GetBytes(key);
             byte[] hash = SHA256.HashData(privateKeyBytes);
 
             return hash;

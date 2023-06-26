@@ -38,6 +38,7 @@ namespace SingleEncrypter.Commands
                 # HELP (commands)                 #
                 ***********************************
                 """);
+          
         }
 
         public override bool VerifyCommand(string[] args)
