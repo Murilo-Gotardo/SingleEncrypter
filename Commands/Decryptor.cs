@@ -5,6 +5,10 @@ namespace SingleEncrypter.Commands
 {
     internal class Decryptor : Command
     {
+        public override string? CommandName { get; set; }
+
+        public override string? Option { get; set; }
+
         public override void ExecuteCommand(string[] args)
         {
             try
@@ -14,54 +18,76 @@ namespace SingleEncrypter.Commands
                 if (File.Exists(path))
                 {
                     Decrypt(path, args[2]);
-                    Console.WriteLine($"""
-                        ---------------
-                        File decryption succeeded
-                        ---------------
-                        """);
                 }
                 else
                 {
                     Console.WriteLine($"""
-                    ---------------
-                    File does not exist 
-                    Path provided: {path}
-                    ---------------
-                    """);
+                        ---------------
+                        - File does not exist 
+                        - Path provided: {path}
+                        ---------------
+                        """);
                 }                  
             }
             catch (ArgumentException)
             {
                 Console.WriteLine($"""
                     ---------------
-                    DEC needs a valid path
+                    - DEC needs a valid path
                     ---------------
                     """);
             }
                 
         }
 
+        public override Task ExecuteCommandAsync(string[] args)
+        {
+            throw new NotImplementedException();
+        }
+
         public static void Decrypt(string file, string key)
         {
+            FileHelper.RestorePermissions(file);
+
+            //Losing information (Padding is invalid and cannot be removed.)
+
             try
             {
-                FileHelper.RestorePermissions(file);
-
                 Aes _aes = Aes.Create();
-
-                byte[] fileBytes = File.ReadAllBytes(file);
 
                 _aes.Key = Encryptor.DeriveKey(key);
                 _aes.IV = new byte[16];
                 _aes.Mode = CipherMode.CBC;
                 _aes.Padding = PaddingMode.PKCS7;
 
-                ICryptoTransform decrypt = _aes.CreateDecryptor();
+                string decFile = Path.ChangeExtension(file, "");
 
-                byte[] decFile = decrypt.TransformFinalBlock(fileBytes, 0, fileBytes.Length);
+                FileStream _inFileStreamReader = new(file, FileMode.Open, FileAccess.Read);
+                FileStream _outFileStreamReader = new(decFile, FileMode.OpenOrCreate, FileAccess.Write);
+                _outFileStreamReader.SetLength(0);
 
-                File.WriteAllBytes(Path.ChangeExtension(file, ""), decFile);
+                CryptoStream _cryptoStream = new(_outFileStreamReader, _aes.CreateDecryptor(), CryptoStreamMode.Write);
+
+                byte[] buffer = new byte[4096];
+
+                int bytesRead;
+
+                while ((bytesRead = _inFileStreamReader.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    _cryptoStream.Write(buffer, 0, bytesRead);
+                }
+
+                _cryptoStream.Close();
+                _inFileStreamReader.Close();
+                _outFileStreamReader.Close();
+
                 File.Delete(file);
+
+                Console.WriteLine($"""
+                    ---------------
+                    - File decryption succeeded
+                    ---------------
+                    """);
             }
             catch (CryptographicException)
             {
@@ -69,11 +95,20 @@ namespace SingleEncrypter.Commands
 
                 Console.WriteLine($"""
                     ---------------
-                    The file has been modified (impossible to decrypt)
-                    Modified date: {modifiedFile}
+                    - Invalid password
+                    - Modified date: {modifiedFile}
                     ---------------
                     """);
             }
+            catch (Exception)
+            {
+                Console.WriteLine($"""
+                    ---------------
+                    - Some unknown error ocurred while decrypting the file
+                    ---------------
+                    """);
+            }
+            
         }
 
         public override bool VerifyCommand(string[] args)

@@ -4,12 +4,11 @@ namespace SingleEncrypter
 {
     internal class Program
     {
-        //removed args (parameter of main) for testing
         private static void Main()
         {
             List<Command> commands = new()
             {
-                new Command(),
+                new Core(),
                 new Help(),
                 new Decryptor(),
                 new Encryptor()
@@ -18,7 +17,9 @@ namespace SingleEncrypter
             while (true)
             {
                 Console.Write("SingleEncrypter> ");
-                string[] args = Console.ReadLine().ToLower().Split(" ");
+                string[]? args = Console.ReadLine()?.ToLower().Split(" ");
+
+                if (args is null || args.Length == 0) continue;
 
                 if (args[0] == "exit" || args[0] == "bye") break;
 
@@ -26,27 +27,34 @@ namespace SingleEncrypter
 
                 foreach (Command command in commands)
                 {
-                    if (command.VerifyCommand(args))
+                    if (args[0] == "se")
                     {
-                        command.ExecuteCommand(args);
+                        command.ExecuteCommandAsync(args).GetAwaiter().GetResult();
                         commandFound = true;
                         break;
                     }
-                    //TODO: (maybe) refactor this section
+                    else if (args[0] == "clear" || args[0] == "cls")
+                    {
+                        Console.Clear();
+                        commandFound = true;
+                        break;
+                    }
                     else
                     {
-                        if (args[0] == "clear") 
-                            Console.Clear();
+                        if (command.VerifyCommand(args))
+                        {
+                            command.ExecuteCommand(args);
                             commandFound = true;
+                            break;
+                        }
                     }
-                    //till here
                 }
 
                 if (!commandFound)
                 {
                     Console.WriteLine("""
                         ---------------
-                        Invalid command (type HELP)
+                        - Invalid command (type HELP)
                         ---------------
                         """);
                 }

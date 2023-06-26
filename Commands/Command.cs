@@ -1,26 +1,18 @@
-﻿namespace SingleEncrypter.Commands
+﻿using SingleEncrypter.Helper;
+using System.Reflection;
+
+namespace SingleEncrypter.Commands
 {
-    internal class Command
+    internal abstract class Command
     {
-        public virtual string? CommandName { get; set; }
+        public abstract string? CommandName { get; set; }
 
-        public virtual string? Option { get; set; }
+        public abstract string? Option { get; set; }
 
-        public virtual void ExecuteCommand(string[] args)
-        {   
-            Console.WriteLine("""
+        public abstract void ExecuteCommand(string[] args);
 
-                SingleEncripter 0.1.0-beta
-                ---------------
-                HELP (commands)
+        public abstract Task ExecuteCommandAsync(string[] args);
 
-                """);        
-        }
-
-        public virtual bool VerifyCommand(string[] args)
-        {
-            CommandName = args[0] == "se" ? args[0] : "";
-            return args[0] == "se";
-        }
+        public abstract bool VerifyCommand(string[] args);
     }
 }
