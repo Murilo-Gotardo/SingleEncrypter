@@ -3,6 +3,8 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using SingleEncrypter.Helper;
+using SingleEncrypter.UI;
+using System.Diagnostics;
 
 namespace SingleEncrypter.Commands
 {
@@ -18,11 +20,15 @@ namespace SingleEncrypter.Commands
             {
                 string path = Path.GetFullPath(args[1]);
 
-                if (File.Exists(path))
+                if (string.IsNullOrEmpty(args[2]))
                 {
-                    Encrypt(path, args[2]);
-                } 
-                else
+                    Console.WriteLine($"""
+                        ---------------
+                        - ENC needs a password
+                        ---------------
+                        """);
+                }
+                else if (!File.Exists(path))
                 {
                     Console.WriteLine($"""
                         ---------------
@@ -30,6 +36,11 @@ namespace SingleEncrypter.Commands
                         - Path provided: {path}
                         ---------------
                         """);
+                    
+                } 
+                else
+                {
+                    Encrypt(path, args[2]);
                 }
             }
             catch (ArgumentException)
@@ -49,8 +60,12 @@ namespace SingleEncrypter.Commands
 
         private static void Encrypt(string file, string key) 
         {
+            Stopwatch _stopwatch = new();
+           
             try
             {
+                _stopwatch.Start();
+
                 Aes _aes = Aes.Create();
 
                 _aes.Key = DeriveKey(key);
@@ -61,31 +76,47 @@ namespace SingleEncrypter.Commands
                 string encFile = file + ".enc";
 
                 FileStream _inFileStreamReader = new(file, FileMode.Open, FileAccess.Read);
-                FileStream _outFileStreamReader = new(encFile, FileMode.OpenOrCreate, FileAccess.Write);
-                _outFileStreamReader.SetLength(0);
+                FileStream _outFileStreamWriter = new(encFile, FileMode.OpenOrCreate, FileAccess.Write);
+                _outFileStreamWriter.SetLength(0);
 
-                CryptoStream _cryptoStream = new(_outFileStreamReader, _aes.CreateEncryptor(), CryptoStreamMode.Write);                
+                CryptoStream _cryptoStream = new(_outFileStreamWriter, _aes.CreateEncryptor(), CryptoStreamMode.Write);                
 
-                byte[] buffer = new byte[4096];
+                byte[] buffer = new byte[10485760];
 
                 int bytesRead;
+
+                long totalBytesRead = 0;
+
+                Console.CursorVisible = false;
 
                 while ((bytesRead = _inFileStreamReader.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     _cryptoStream.Write(buffer, 0, bytesRead);
+
+                    ProgressBar.Update(totalBytesRead += bytesRead, _inFileStreamReader.Length);
                 }
+
+                Console.WriteLine("\n");
+
+                Console.ResetColor();
+                Console.CursorVisible = true;
 
                 _cryptoStream.Close();
                 _inFileStreamReader.Close();
-                _outFileStreamReader.Close();
+                _outFileStreamWriter.Close();
 
                 FileHelper.RestrictPermisions(encFile);
 
                 File.Delete(file);
 
+                _stopwatch.Stop();
+
+                TimeSpan timeSpan = _stopwatch.Elapsed;
+
                 Console.WriteLine($"""
                     ---------------
                     - File encryption succeeded
+                    - Time Taken: {timeSpan}
                     - Save your password: {key}
                     ---------------
                     """);

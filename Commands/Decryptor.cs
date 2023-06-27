@@ -1,4 +1,6 @@
 ﻿using SingleEncrypter.Helper;
+using SingleEncrypter.UI;
+using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace SingleEncrypter.Commands
@@ -15,11 +17,15 @@ namespace SingleEncrypter.Commands
             {
                 string path = Path.GetFullPath(args[1]);
 
-                if (File.Exists(path))
+                if (string.IsNullOrEmpty(args[2]))
                 {
-                    Decrypt(path, args[2]);
+                    Console.WriteLine($"""
+                        ---------------
+                        - The file requires a password to be decrypted
+                        ---------------
+                        """);
                 }
-                else
+                else if (!File.Exists(path))
                 {
                     Console.WriteLine($"""
                         ---------------
@@ -27,6 +33,11 @@ namespace SingleEncrypter.Commands
                         - Path provided: {path}
                         ---------------
                         """);
+                    
+                }
+                else
+                {
+                    Decrypt(path, args[2]); 
                 }                  
             }
             catch (ArgumentException)
@@ -36,8 +47,7 @@ namespace SingleEncrypter.Commands
                     - DEC needs a valid path
                     ---------------
                     """);
-            }
-                
+            }   
         }
 
         public override Task ExecuteCommandAsync(string[] args)
@@ -49,10 +59,12 @@ namespace SingleEncrypter.Commands
         {
             FileHelper.RestorePermissions(file);
 
-            //Losing information (Padding is invalid and cannot be removed.)
+            Stopwatch _stopwatch = new();
 
             try
             {
+                _stopwatch.Start();
+
                 Aes _aes = Aes.Create();
 
                 _aes.Key = Encryptor.DeriveKey(key);
@@ -63,29 +75,45 @@ namespace SingleEncrypter.Commands
                 string decFile = Path.ChangeExtension(file, "");
 
                 FileStream _inFileStreamReader = new(file, FileMode.Open, FileAccess.Read);
-                FileStream _outFileStreamReader = new(decFile, FileMode.OpenOrCreate, FileAccess.Write);
-                _outFileStreamReader.SetLength(0);
+                FileStream _outFileStreamWriter = new(decFile, FileMode.OpenOrCreate, FileAccess.Write);
+                _outFileStreamWriter.SetLength(0);
 
-                CryptoStream _cryptoStream = new(_outFileStreamReader, _aes.CreateDecryptor(), CryptoStreamMode.Write);
+                CryptoStream _cryptoStream = new(_outFileStreamWriter, _aes.CreateDecryptor(), CryptoStreamMode.Write);
 
-                byte[] buffer = new byte[4096];
+                byte[] buffer = new byte[10485760];
 
                 int bytesRead;
+
+                long totalBytesRead = 0;
+
+                Console.CursorVisible = false;
 
                 while ((bytesRead = _inFileStreamReader.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     _cryptoStream.Write(buffer, 0, bytesRead);
+
+                    ProgressBar.Update(totalBytesRead += bytesRead, _inFileStreamReader.Length);
                 }
+
+                Console.WriteLine("\n");
+
+                Console.ResetColor();
+                Console.CursorVisible = true;
 
                 _cryptoStream.Close();
                 _inFileStreamReader.Close();
-                _outFileStreamReader.Close();
+                _outFileStreamWriter.Close();
 
                 File.Delete(file);
+
+                _stopwatch.Stop();
+
+                TimeSpan timeSpan = _stopwatch.Elapsed;
 
                 Console.WriteLine($"""
                     ---------------
                     - File decryption succeeded
+                    - Time Taken: {timeSpan}
                     ---------------
                     """);
             }
@@ -108,7 +136,6 @@ namespace SingleEncrypter.Commands
                     ---------------
                     """);
             }
-            
         }
 
         public override bool VerifyCommand(string[] args)

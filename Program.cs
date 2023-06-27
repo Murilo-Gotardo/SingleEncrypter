@@ -1,4 +1,5 @@
 ﻿using SingleEncrypter.Commands;
+using SingleEncrypter.UI;
 
 namespace SingleEncrypter
 {
@@ -17,6 +18,7 @@ namespace SingleEncrypter
             while (true)
             {
                 Console.Write("SingleEncrypter> ");
+                
                 string[]? args = Console.ReadLine()?.ToLower().Split(" ");
 
                 if (args is null || args.Length == 0) continue;
@@ -29,8 +31,10 @@ namespace SingleEncrypter
                 {
                     if (args[0] == "se")
                     {
+                        Console.Write("\n");
                         command.ExecuteCommandAsync(args).GetAwaiter().GetResult();
                         commandFound = true;
+                        Console.Write("\n");
                         break;
                     }
                     else if (args[0] == "clear" || args[0] == "cls")
@@ -43,8 +47,10 @@ namespace SingleEncrypter
                     {
                         if (command.VerifyCommand(args))
                         {
+                            Console.Write("\n");
                             command.ExecuteCommand(args);
                             commandFound = true;
+                            Console.Write("\n");
                             break;
                         }
                     }

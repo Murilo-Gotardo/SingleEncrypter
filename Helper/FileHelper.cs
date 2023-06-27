@@ -29,10 +29,10 @@ namespace SingleEncrypter.Helper
                     UseShellExecute = false
                 };
 
-                Process _process = Process.Start(_processInfo);
-                _process.WaitForExit();
+                Process? _process = Process.Start(_processInfo);
+                _process?.WaitForExit();
 
-                if (_process.ExitCode != 0)
+                if (_process?.ExitCode != 0)
                 {
                     Console.WriteLine($"""
                         SingleEncrypter could not restrict the permisions of the file: {file}
@@ -59,10 +59,10 @@ namespace SingleEncrypter.Helper
                     UseShellExecute = false
                 };
 
-                Process _process = Process.Start(_processInfo);
-                _process.WaitForExit();
+                Process? _process = Process.Start(_processInfo);
+                _process?.WaitForExit();
 
-                if (_process.ExitCode != 0)
+                if (_process?.ExitCode != 0)
                 {
                     Console.WriteLine($"SingleEncrypter could not restore the permissions of the file: {file}");
                 }

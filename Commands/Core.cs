@@ -1,10 +1,5 @@
 ﻿using SingleEncrypter.Helper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SingleEncrypter.Commands
 {
@@ -27,15 +22,13 @@ namespace SingleEncrypter.Commands
 
             string cacheFilePath = Path.Combine(projectDirectory!, "Cache", "tagCache.txt");
 
-            //TODO: verify why the tag is giving white spaces in the console (Trim() does not work)
-
             string tag = File.ReadAllText(cacheFilePath);
 
             Console.WriteLine($"""
                 ***********************************
-                # SingleEncripter {tag}           #
-                # ---------------                 #
-                # HELP (commands)                 #
+                # SingleEncripter {tag}           
+                # ---------------                 
+                # HELP (commands)                 
                 ***********************************
                 """);
           
