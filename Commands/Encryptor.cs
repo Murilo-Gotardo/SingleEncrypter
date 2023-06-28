@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using SingleEncrypter.Helper;
 using SingleEncrypter.UI;
@@ -23,18 +21,22 @@ namespace SingleEncrypter.Commands
                 if (string.IsNullOrEmpty(args[2]))
                 {
                     Console.WriteLine($"""
+
                         ---------------
                         - ENC needs a password
                         ---------------
+
                         """);
                 }
                 else if (!File.Exists(path))
                 {
                     Console.WriteLine($"""
+
                         ---------------
                         - File does not exist 
                         - Path provided: {path}
                         ---------------
+
                         """);
                     
                 } 
@@ -46,9 +48,11 @@ namespace SingleEncrypter.Commands
             catch (ArgumentException)
             {
                 Console.WriteLine($"""
+
                     ---------------
                     - ENC needs a valid path
                     ---------------
+
                     """);
             }
         }
@@ -111,22 +115,16 @@ namespace SingleEncrypter.Commands
 
                 _stopwatch.Stop();
 
-                TimeSpan timeSpan = _stopwatch.Elapsed;
-
-                Console.WriteLine($"""
-                    ---------------
-                    - File encryption succeeded
-                    - Time Taken: {timeSpan}
-                    - Save your password: {key}
-                    ---------------
-                    """);
+                FinalMessageHelper.Message(1, _stopwatch, key);
             } 
             catch (CryptographicException)
             {
                 Console.WriteLine($"""
+
                     ---------------
                     - SingleEncrypter could not encrypt the file: {file}
                     ---------------
+
                     """);
             }
         }

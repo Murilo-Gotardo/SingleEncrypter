@@ -9,6 +9,7 @@
         public override void ExecuteCommand(string[] args)
         {
             Console.WriteLine("""
+
                 ---------------
                 - SE (software information)
                 - HELP (help with commands)
@@ -16,6 +17,7 @@
                 - DEC  (decrypt a file)
                 - BYE/EXIT (close SingleEncrypter)
                 ---------------
+
                 """);
         }
 

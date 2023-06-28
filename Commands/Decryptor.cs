@@ -20,18 +20,22 @@ namespace SingleEncrypter.Commands
                 if (string.IsNullOrEmpty(args[2]))
                 {
                     Console.WriteLine($"""
+
                         ---------------
                         - The file requires a password to be decrypted
                         ---------------
+
                         """);
                 }
                 else if (!File.Exists(path))
                 {
                     Console.WriteLine($"""
+
                         ---------------
                         - File does not exist 
                         - Path provided: {path}
                         ---------------
+
                         """);
                     
                 }
@@ -43,9 +47,11 @@ namespace SingleEncrypter.Commands
             catch (ArgumentException)
             {
                 Console.WriteLine($"""
+
                     ---------------
                     - DEC needs a valid path
                     ---------------
+
                     """);
             }   
         }
@@ -108,32 +114,29 @@ namespace SingleEncrypter.Commands
 
                 _stopwatch.Stop();
 
-                TimeSpan timeSpan = _stopwatch.Elapsed;
-
-                Console.WriteLine($"""
-                    ---------------
-                    - File decryption succeeded
-                    - Time Taken: {timeSpan}
-                    ---------------
-                    """);
+                FinalMessageHelper.Message(2, _stopwatch);
             }
             catch (CryptographicException)
             {
                 DateTime modifiedFile = File.GetLastWriteTime(file);
 
                 Console.WriteLine($"""
+
                     ---------------
                     - Invalid password
                     - Modified date: {modifiedFile}
                     ---------------
+
                     """);
             }
             catch (Exception)
             {
                 Console.WriteLine($"""
+
                     ---------------
                     - Some unknown error ocurred while decrypting the file
                     ---------------
+
                     """);
             }
         }

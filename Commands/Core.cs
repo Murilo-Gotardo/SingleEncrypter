@@ -25,11 +25,13 @@ namespace SingleEncrypter.Commands
             string tag = File.ReadAllText(cacheFilePath);
 
             Console.WriteLine($"""
+
                 ***********************************
                 # SingleEncripter {tag}           
                 # ---------------                 
                 # HELP (commands)                 
                 ***********************************
+
                 """);
           
         }

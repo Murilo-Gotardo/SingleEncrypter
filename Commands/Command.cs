@@ -1,7 +1,4 @@
-﻿using SingleEncrypter.Helper;
-using System.Reflection;
-
-namespace SingleEncrypter.Commands
+﻿namespace SingleEncrypter.Commands
 {
     internal abstract class Command
     {
