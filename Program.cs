@@ -1,5 +1,4 @@
 ﻿using SingleEncrypter.Commands;
-using SingleEncrypter.UI;
 
 namespace SingleEncrypter
 {
@@ -18,51 +17,44 @@ namespace SingleEncrypter
             while (true)
             {
                 Console.Write("SingleEncrypter> ");
-                
                 string[]? args = Console.ReadLine()?.ToLower().Split(" ");
 
                 if (args is null || args.Length == 0) continue;
 
                 if (args[0] == "exit" || args[0] == "bye") break;
 
-                bool commandFound = false;
+                if (args[0] == "se")
+                {
+                    Console.Write("\n");
+                    commands.ElementAt(0).ExecuteCommandAsync(args).GetAwaiter().GetResult();
+                    Console.Write("\n");
+                    break;
+                }
+                else if (args[0] == "clear" || args[0] == "cls")
+                {
+                    Console.Clear();
+                    break;
+                }
 
                 foreach (Command command in commands)
                 {
-                    if (args[0] == "se")
+                    
+                    if (command.VerifyCommand(args))
                     {
                         Console.Write("\n");
-                        command.ExecuteCommandAsync(args).GetAwaiter().GetResult();
-                        commandFound = true;
+                        command.ExecuteCommand(args);
                         Console.Write("\n");
                         break;
-                    }
-                    else if (args[0] == "clear" || args[0] == "cls")
-                    {
-                        Console.Clear();
-                        commandFound = true;
-                        break;
-                    }
+                    }   
                     else
                     {
-                        if (command.VerifyCommand(args))
-                        {
-                            Console.Write("\n");
-                            command.ExecuteCommand(args);
-                            commandFound = true;
-                            Console.Write("\n");
-                            break;
-                        }
+                        Console.WriteLine("""
+                            ---------------
+                            - Invalid command (type HELP)
+                            ---------------
+                            """);
+                        break;
                     }
-                }
-
-                if (!commandFound)
-                {
-                    Console.WriteLine("""
-                        ---------------
-                        - Invalid command (type HELP)
-                        ---------------
-                        """);
                 }
             }
         }
