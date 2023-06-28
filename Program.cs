@@ -23,40 +23,43 @@ namespace SingleEncrypter
 
                 if (args[0] == "exit" || args[0] == "bye") break;
 
-                bool commandFound = false;
-
-                foreach (Command command in commands)
+                if (args[0] == "se")
                 {
-                    if (args[0] == "se")
-                    {
-                        command.ExecuteCommandAsync(args).GetAwaiter().GetResult();
-                        commandFound = true;
-                        break;
-                    }
-                    else if (args[0] == "clear" || args[0] == "cls")
-                    {
-                        Console.Clear();
-                        commandFound = true;
-                        break;
-                    }
-                    else
+                    Console.Write("\n");
+                    commands.ElementAt(0).ExecuteCommandAsync(args).GetAwaiter().GetResult();
+                    Console.Write("\n");
+                }
+                else if (args[0] == "clear" || args[0] == "cls")
+                {
+                    Console.Clear();
+                }
+                else
+                {
+                    bool commandFound = false;
+
+                    foreach (Command command in commands)
                     {
                         if (command.VerifyCommand(args))
                         {
+                            Console.Write("\n");
                             command.ExecuteCommand(args);
-                            commandFound = true;
+                            Console.Write("\n");
+                            commandFound = command.VerifyCommand(args);
                             break;
                         }
                     }
-                }
 
-                if (!commandFound)
-                {
-                    Console.WriteLine("""
-                        ---------------
-                        - Invalid command (type HELP)
-                        ---------------
-                        """);
+                    if (!commandFound)
+                    {
+                        Console.WriteLine("""
+
+                            ---------------
+                            - Invalid command (type HELP)
+                            ---------------
+
+                            """);
+                        break;
+                    }
                 }
             }
         }

@@ -9,13 +9,15 @@
         public override void ExecuteCommand(string[] args)
         {
             Console.WriteLine("""
+
                 ---------------
                 - SE (software information)
                 - HELP (help with commands)
-                - ENC (encript a file)
-                - DEC  (decript a file)
+                - ENC (encrypt a file)
+                - DEC  (decrypt a file)
                 - BYE/EXIT (close SingleEncrypter)
                 ---------------
+
                 """);
         }
 
