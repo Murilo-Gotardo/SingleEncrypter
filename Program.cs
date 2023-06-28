@@ -28,38 +28,38 @@ namespace SingleEncrypter
                     Console.Write("\n");
                     commands.ElementAt(0).ExecuteCommandAsync(args).GetAwaiter().GetResult();
                     Console.Write("\n");
-                    break;
                 }
                 else if (args[0] == "clear" || args[0] == "cls")
                 {
                     Console.Clear();
-                    break;
                 }
-
-                bool commandFound = false;
-
-                foreach (Command command in commands)
+                else
                 {
-                    if (command.VerifyCommand(args))
+                    bool commandFound = false;
+
+                    foreach (Command command in commands)
                     {
-                        Console.Write("\n");
-                        command.ExecuteCommand(args);
-                        Console.Write("\n");
-                        commandFound = command.VerifyCommand(args);
-                        break;
-                    }   
-                }
+                        if (command.VerifyCommand(args))
+                        {
+                            Console.Write("\n");
+                            command.ExecuteCommand(args);
+                            Console.Write("\n");
+                            commandFound = command.VerifyCommand(args);
+                            break;
+                        }
+                    }
 
-                if (!commandFound)
-                {
-                    Console.WriteLine("""
+                    if (!commandFound)
+                    {
+                        Console.WriteLine("""
 
                             ---------------
                             - Invalid command (type HELP)
                             ---------------
 
                             """);
-                    break;
+                        break;
+                    }
                 }
             }
         }
