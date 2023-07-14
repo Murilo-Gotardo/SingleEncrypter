@@ -2,10 +2,6 @@
 {
     internal class Help : Command
     {
-        public override string? CommandName { get; set; }
-
-        public override string? Option { get; set; }
-
         public override void ExecuteCommand(string[] args)
         {
             Console.WriteLine("""
@@ -21,14 +17,8 @@
                 """);
         }
 
-        public override Task ExecuteCommandAsync(string[] args)
-        {
-            throw new NotImplementedException();
-        }
-
         public override bool VerifyCommand(string[] args)
         {
-            CommandName = args[0] == "help" ? args[0] : "";
             return args[0] == "help";
         }
     }

@@ -7,10 +7,6 @@ namespace SingleEncrypter.Commands
 {
     internal class Decryptor : Command
     {
-        public override string? CommandName { get; set; }
-
-        public override string? Option { get; set; }
-
         public override void ExecuteCommand(string[] args)
         {
             try
@@ -56,11 +52,6 @@ namespace SingleEncrypter.Commands
             }   
         }
 
-        public override Task ExecuteCommandAsync(string[] args)
-        {
-            throw new NotImplementedException();
-        }
-
         public static void Decrypt(string file, string key)
         {
             FileHelper.RestorePermissions(file);
@@ -94,11 +85,19 @@ namespace SingleEncrypter.Commands
 
                 Console.CursorVisible = false;
 
-                while ((bytesRead = _inFileStreamReader.Read(buffer, 0, buffer.Length)) > 0)
+                unsafe
                 {
-                    _cryptoStream.Write(buffer, 0, bytesRead);
+                    fixed (byte* pBuffer = buffer)
+                    {
+                        while ((bytesRead = _inFileStreamReader.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            byte* pBufferPinned = pBuffer;
 
-                    ProgressBar.Update(totalBytesRead += bytesRead, _inFileStreamReader.Length);
+                            _cryptoStream.Write(buffer, 0, bytesRead);
+
+                            ProgressBar.Update(totalBytesRead += bytesRead, _inFileStreamReader.Length);
+                        }
+                    }
                 }
 
                 Console.WriteLine("\n");
@@ -143,7 +142,6 @@ namespace SingleEncrypter.Commands
 
         public override bool VerifyCommand(string[] args)
         {
-            CommandName = args[0] == "dec" ? args[0] : "";
             return args[0] == "dec";
         }
     }

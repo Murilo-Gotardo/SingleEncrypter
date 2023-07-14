@@ -8,7 +8,6 @@ namespace SingleEncrypter
         {
             List<Command> commands = new()
             {
-                new Core(),
                 new Help(),
                 new Decryptor(),
                 new Encryptor()
@@ -26,7 +25,7 @@ namespace SingleEncrypter
                 if (args[0] == "se")
                 {
                     Console.Write("\n");
-                    commands.ElementAt(0).ExecuteCommandAsync(args).GetAwaiter().GetResult();
+                    Command.ExecuteCommandAsync(args).GetAwaiter().GetResult();
                     Console.Write("\n");
                 }
                 else if (args[0] == "clear" || args[0] == "cls")

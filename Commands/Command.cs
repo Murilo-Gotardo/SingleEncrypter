@@ -1,15 +1,36 @@
-﻿namespace SingleEncrypter.Commands
+﻿using SingleEncrypter.Helper;
+using System.Reflection;
+
+namespace SingleEncrypter.Commands
 {
-    internal abstract class Command
+    internal class Command
     {
-        public abstract string? CommandName { get; set; }
+        public virtual void ExecuteCommand(string[] args) { }
 
-        public abstract string? Option { get; set; }
+        public static async Task ExecuteCommandAsync(string[] args)
+        {
+            await GitHubTagHelper.GetLatestTag("Murilo-Gotardo", "SingleEncrypter");
 
-        public abstract void ExecuteCommand(string[] args);
+            string? projectDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-        public abstract Task ExecuteCommandAsync(string[] args);
+            string cacheFilePath = Path.Combine(projectDirectory!, "Cache", "tagCache.txt");
 
-        public abstract bool VerifyCommand(string[] args);
+            string tag = File.ReadAllText(cacheFilePath);
+
+            Console.WriteLine($"""
+
+                ***********************************
+                # SingleEncrypter {tag}           
+                # ---------------                 
+                # HELP (commands)                 
+                ***********************************
+
+                """);
+        }
+
+        public virtual bool VerifyCommand(string[] args)
+        {
+            return args[0] == "se";
+        }
     }
 }

@@ -8,10 +8,6 @@ namespace SingleEncrypter.Commands
 {
     internal class Encryptor : Command
     {
-        public override string? CommandName { get; set; }
-
-        public override string? Option { get; set; }
-
         public override void ExecuteCommand(string[] args)
         {
             try
@@ -57,11 +53,6 @@ namespace SingleEncrypter.Commands
             }
         }
 
-        public override Task ExecuteCommandAsync(string[] args)
-        {
-            throw new NotImplementedException();
-        }
-
         private static void Encrypt(string file, string key) 
         {
             Stopwatch _stopwatch = new();
@@ -83,7 +74,7 @@ namespace SingleEncrypter.Commands
                 FileStream _outFileStreamWriter = new(encFile, FileMode.OpenOrCreate, FileAccess.Write);
                 _outFileStreamWriter.SetLength(0);
 
-                CryptoStream _cryptoStream = new(_outFileStreamWriter, _aes.CreateEncryptor(), CryptoStreamMode.Write);                
+                CryptoStream _cryptoStream = new(_outFileStreamWriter, _aes.CreateEncryptor(), CryptoStreamMode.Write);
 
                 byte[] buffer = new byte[10485760];
 
@@ -93,11 +84,19 @@ namespace SingleEncrypter.Commands
 
                 Console.CursorVisible = false;
 
-                while ((bytesRead = _inFileStreamReader.Read(buffer, 0, buffer.Length)) > 0)
+                unsafe
                 {
-                    _cryptoStream.Write(buffer, 0, bytesRead);
+                    fixed (byte* pBuffer = buffer)
+                    {
+                        while ((bytesRead = _inFileStreamReader.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            byte* pBufferPinned = pBuffer;
 
-                    ProgressBar.Update(totalBytesRead += bytesRead, _inFileStreamReader.Length);
+                            _cryptoStream.Write(buffer, 0, bytesRead);
+
+                            ProgressBar.Update(totalBytesRead += bytesRead, _inFileStreamReader.Length);
+                        }
+                    }
                 }
 
                 Console.WriteLine("\n");
@@ -139,7 +138,6 @@ namespace SingleEncrypter.Commands
 
         public override bool VerifyCommand(string[] args)
         {
-            CommandName = args[0] == "enc" ? args[0] : "";
             return args[0] == "enc";
         }
     }
