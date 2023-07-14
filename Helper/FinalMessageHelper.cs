@@ -4,7 +4,7 @@ namespace SingleEncrypter.Helper
 {
     internal class FinalMessageHelper
     {
-        public static void Message( int op, Stopwatch _timeTaken, string? key = null)
+        public static void Message(int op, Stopwatch _timeTaken, string? key = null)
         {
             TimeSpan _timeSpan = _timeTaken.Elapsed;
 
