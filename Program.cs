@@ -34,30 +34,28 @@ namespace SingleEncrypter
                 }
                 else
                 {
-                    bool commandFound = false;
-
                     foreach (Command command in commands)
                     {
-                        if (command.VerifyCommand(args))
+                        bool commandFound = command.VerifyCommand(args);
+
+                        if (commandFound)
                         {
                             Console.Write("\n");
                             command.ExecuteCommand(args);
                             Console.Write("\n");
-                            commandFound = command.VerifyCommand(args);
                             break;
                         }
-                    }
+                        else
+                        {
+                            Console.WriteLine("""
 
-                    if (!commandFound)
-                    {
-                        Console.WriteLine("""
+                                ---------------
+                                - Invalid command (type HELP)
+                                ---------------
 
-                            ---------------
-                            - Invalid command (type HELP)
-                            ---------------
-
-                            """);
-                        break;
+                                """);
+                            break;
+                        }
                     }
                 }
             }
