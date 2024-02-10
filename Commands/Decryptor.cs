@@ -84,22 +84,16 @@ namespace SingleEncrypter.Commands
                 long totalBytesRead = 0;
 
                 Console.CursorVisible = false;
-
-                unsafe
+                
+                while ((bytesRead = _inFileStreamReader.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    fixed (byte* pBuffer = buffer)
-                    {
-                        while ((bytesRead = _inFileStreamReader.Read(buffer, 0, buffer.Length)) > 0)
-                        {
-                            byte* pBufferPinned = pBuffer;
+                    byte* pBufferPinned = pBuffer;
 
-                            _cryptoStream.Write(buffer, 0, bytesRead);
+                    _cryptoStream.Write(buffer, 0, bytesRead);
 
-                            ProgressBar.Update(totalBytesRead += bytesRead, _inFileStreamReader.Length);
-                        }
-                    }
+                    ProgressBar.Update(totalBytesRead += bytesRead, _inFileStreamReader.Length);
                 }
-
+                   
                 Console.WriteLine("\n");
 
                 Console.ResetColor();
